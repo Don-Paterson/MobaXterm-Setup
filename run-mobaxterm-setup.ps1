@@ -11,17 +11,14 @@ if ($LASTEXITCODE -notin @(0, -1978335189)) {
     Write-Warning "winget exited with code $LASTEXITCODE"
 }
 
-# Wait for MobaXterm.ini to be created (first launch writes it)
+# Launch MobaXterm briefly to generate MobaXterm.ini
 Write-Host "Waiting for MobaXterm to initialise..." -ForegroundColor Yellow
-$iniDir  = "$env:APPDATA\MobaXterm"
-$iniPath = "$iniDir\MobaXterm.ini"
+$iniDir   = "$env:APPDATA\MobaXterm"
+$iniPath  = "$iniDir\MobaXterm.ini"
+$mobaPath = 'C:\Program Files (x86)\Mobatek\MobaXterm\MobaXterm.exe'
 
-$moba = Get-Command 'MobaXterm' -ErrorAction SilentlyContinue
-if (-not $moba) {
-    $moba = 'C:\Program Files (x86)\Mobatek\MobaXterm\MobaXterm.exe'
-}
-if (Test-Path $moba) {
-    Start-Process $moba
+if ((Test-Path $mobaPath) -and -not (Test-Path $iniPath)) {
+    Start-Process $mobaPath
     $timeout = 15
     while (-not (Test-Path $iniPath) -and $timeout -gt 0) {
         Start-Sleep 1; $timeout--
@@ -30,14 +27,13 @@ if (Test-Path $moba) {
     Start-Sleep 1
 }
 
-# Fetch sessions
+# Fetch and inject sessions
 Write-Host "Importing sessions..." -ForegroundColor Yellow
 $sessionsUrl = "https://raw.githubusercontent.com/Don-Paterson/MobaXterm-Setup/main/MobaXterm-Sessions.mxtsessions"
 $sessions = Invoke-RestMethod -Uri $sessionsUrl
 
 if (Test-Path $iniPath) {
     $ini = Get-Content $iniPath -Raw
-    # Strip all existing [Bookmarks*] sections
     $ini = ($ini -replace '(?s)\r?\n\[Bookmarks[^\]]*\].*', '').TrimEnd()
     $ini += "`r`n`r`n$sessions"
     Set-Content $iniPath $ini -NoNewline
