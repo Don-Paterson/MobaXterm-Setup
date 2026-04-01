@@ -6,7 +6,7 @@ Write-Host "=== MobaXterm Setup ===" -ForegroundColor Cyan
 
 # Install MobaXterm
 Write-Host "Installing MobaXterm..." -ForegroundColor Yellow
-winget install Mobatek.MobaXterm --silent --accept-source-agreements --accept-package-agreements
+winget install Mobatek.MobaXterm --silent --accept-source-agreements --accept-package-agreements --source winget
 if ($LASTEXITCODE -notin @(0, -1978335189)) {
     Write-Warning "winget exited with code $LASTEXITCODE"
 }
